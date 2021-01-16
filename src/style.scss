@@ -1,0 +1,14 @@
+$primary-color: orange;
+
+@font-face {
+  font-family: "Noto_Sans_JP";
+  src: url("Noto_Sans_JP/NotoSansJP-Medium.otf");
+}
+
+body {
+  font-family: "Noto_Sans_JP";
+}
+
+p {
+  color: $primary-color;
+}
