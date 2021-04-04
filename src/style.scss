@@ -1,5 +1,3 @@
-$primary-color: orange;
-
 @font-face {
   font-family: "Noto_Sans_JP";
   src: url("Noto_Sans_JP/NotoSansJP-Medium.otf");
@@ -9,6 +7,132 @@ body {
   font-family: "Noto_Sans_JP";
 }
 
-p {
-  color: $primary-color;
+#tab-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tab {
+  width: 150px;
+  height: 50px;
+  align-items: center;
+  display: flex;
+  justify-content: center;
+
+  &:hover {
+    cursor: pointer;
+  }
+}
+
+.pomodoro-tab {
+  background-color: #ffb7b7;
+
+  &.selected {
+    background-color: #ff7f7f;
+  }
+}
+
+.short-break-tab {
+  background-color: #b7dbff;
+
+  &.selected {
+    background-color: #7fbfff;
+  }
+}
+
+.long-break-tab {
+  background-color: #b7b7ff;
+
+  &.selected {
+    background-color: #7f7fff;
+  }
+}
+
+.mode {
+  text-align: center;
+  font-size: 28px;
+}
+
+#timer {
+  text-align: center;
+  font-size: 64px;
+}
+
+#timer-message {
+  height: 35px;
+  text-align: center;
+  font-size: 24px;
+}
+
+#timer-button-area {
+  text-align: center;
+}
+
+#timer-control {
+  display: flex;
+  justify-content: center;
+}
+
+#toggle-setting {
+  margin: 16px auto 0 auto;
+}
+
+.timer-button {
+  width: 150px;
+  height: 50px;
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  background-color: #eaeaea;
+  margin: 0 10px;
+
+  &:hover {
+    cursor: pointer;
+  }
+}
+
+#setting {
+  text-align: center;
+  width: 250px;
+  margin: 0 auto;
+}
+
+.length {
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.min-input {
+  margin-left: 20px;
+  height: 32px;
+  width: 72px;
+  font-size: 20px;
+}
+
+.setting-button {
+  width: 150px;
+  height: 50px;
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  margin: 16px auto 0 auto;
+
+  &:hover {
+    cursor: pointer;
+  }
+}
+
+.ok-button {
+  background-color: #eaeaea;
+}
+
+.setting-reset {
+  background-color: #aaaaaa;
+}
+
+#unit {
+  margin-left: 168px;
 }

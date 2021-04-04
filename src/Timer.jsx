@@ -1,19 +1,19 @@
 import React, { useRef, useState, useEffect } from "react";
 
-const initialPomodoroMin = 25;
-const initialShortBreakMin = 5;
+const initialPomodoro = 25;
+const initialShortBreak = 5;
 const initialLongBreak = 15;
 let selectedMode;
 
 const obj = {
   pomodoro: {
-    initialMin: initialPomodoroMin,
-    initialTime: initialPomodoroMin * 60,
+    initialMin: initialPomodoro,
+    initialTime: initialPomodoro * 60,
     selectedTime: 0,
   },
   shortBreak: {
-    initialMin: initialShortBreakMin,
-    initialTime: initialShortBreakMin * 60,
+    initialMin: initialShortBreak,
+    initialTime: initialShortBreak * 60,
     selectedTime: 0,
   },
   longBreak: {
@@ -23,10 +23,11 @@ const obj = {
   },
 };
 
+let time; // Calculate using value in time
+let countDown = null;
+
 const Timer = () => {
-  let countDown = null;
-  let time; // Calculate using value in time
-  const min = 1;
+  const min = 0;
   const max = 60;
 
   let timerEl = useRef(null);
@@ -35,6 +36,9 @@ const Timer = () => {
   const pomodoroValue = useRef(null);
   const shortBreakValue = useRef(null);
   const longBreakValue = useRef(null);
+  const [timerMessage, setEndMessage] = useState("");
+  const [isRunning, setIsRunning] = useState(false);
+  const [isOpenSetting, setIsOpenSetting] = useState(false);
 
   const [mode, setMode] = useState("pomodoro"); // pomodoro, shortBreak, longBreak
 
@@ -57,7 +61,6 @@ const Timer = () => {
   };
 
   useEffect(() => {
-    // Set initial timer
     if (mode === "pomodoro") {
       selectedMode = obj.pomodoro;
     }
@@ -67,17 +70,8 @@ const Timer = () => {
     if (mode === "longBreak") {
       selectedMode = obj.longBreak;
     }
-
-    // Check if initial value has been changed
-    if (selectedMode.selectedTime === 0) {
-      time = selectedMode.initialTime;
-    } else {
-      time = selectedMode.selectedTime;
-    }
-
-    timerEl.current.textContent = convertTime(time);
-    startButton.current.style.display = "block";
-    stopButton.current.style.display = "none";
+    resetTimer();
+    setIsRunning(false);
   }, [mode]);
 
   const runTimer = () => {
@@ -85,29 +79,40 @@ const Timer = () => {
       time--;
     } else {
       stopTimer();
+      if (mode === "pomodoro") {
+        setEndMessage("Time for a break");
+      }
+      if (mode === "shortBreak" || mode === "longBreak") {
+        setEndMessage("Time to work");
+      }
     }
     timerEl.current.textContent = convertTime(time);
   };
 
   const startTimer = () => {
-    startButton.current.style.display = "none";
-    stopButton.current.style.display = "block";
+    // Reset timer when it is zero
+    if (time === 0) {
+      resetTimer();
+    }
+    setEndMessage("");
+    setIsRunning(true);
     countDown = setInterval(() => runTimer(), 1000);
   };
 
   const stopTimer = () => {
     clearInterval(countDown);
-    startButton.current.style.display = "block";
-    stopButton.current.style.display = "none";
+    setIsRunning(false);
   };
 
+  // Check if initial value has been changed
   const resetTimer = () => {
-    // Check if initial value has been changed
+    stopTimer();
     if (selectedMode.selectedTime === 0) {
       time = selectedMode.initialTime;
     } else {
       time = selectedMode.selectedTime;
     }
+    setEndMessage("");
     timerEl.current.textContent = convertTime(time);
   };
 
@@ -116,7 +121,8 @@ const Timer = () => {
 
     // Validate min and max
     if (e.target.value < min) {
-      updatedTime = min * 60;
+      // updatedTime = min * 60;
+      updatedTime = min;
       ref.current.value = min;
     } else if (e.target.value > max) {
       updatedTime = max * 60;
@@ -147,59 +153,136 @@ const Timer = () => {
     setMode(mode);
   };
 
+  const resetSelectedTime = () => {
+    obj.pomodoro.selectedTime = 0;
+    obj.shortBreak.selectedTime = 0;
+    obj.longBreak.selectedTime = 0;
+    resetTimer();
+    pomodoroValue.current.value = obj.pomodoro.initialMin;
+    shortBreakValue.current.value = obj.shortBreak.initialMin;
+    longBreakValue.current.value = obj.longBreak.initialMin;
+  };
+
   return (
     <div>
-      This is timer
-      {mode === "pomodoro" && <div>Pomodoro mode</div>}
-      {mode === "shortBreak" && <div>Short Break mode</div>}
-      {mode === "longBreak" && <div>Long Break mode</div>}
-      <div onClick={() => switchMode("pomodoro")}>pomodoro</div>
-      <div onClick={() => switchMode("shortBreak")}>short break</div>
-      <div onClick={() => switchMode("longBreak")}>long break</div>
-      <div ref={timerEl}></div>
-      <button ref={startButton} onClick={startTimer}>
-        Start
-      </button>
-      <button ref={stopButton} onClick={stopTimer}>
-        Stop
-      </button>
-      <button onClick={resetTimer}>Reset</button>
-      <div>
-        Pomodoro length : Minutes
-        <input
-          ref={pomodoroValue}
-          onBlur={(e) => handleOnFocusout(e, "pomodoro", pomodoroValue)}
-          type="number"
-          name="pomodoro-time"
-          min="1"
-          max="60"
-          defaultValue={obj.pomodoro.initialMin}
-        ></input>
+      <div id="tab-area">
+        <div
+          className={`pomodoro-tab tab${
+            mode === "pomodoro" ? " selected" : ""
+          }`}
+          onClick={() => switchMode("pomodoro")}
+        >
+          Pomodoro
+        </div>
+        <div
+          className={`short-break-tab tab${
+            mode === "shortBreak" ? " selected" : ""
+          }`}
+          onClick={() => switchMode("shortBreak")}
+        >
+          Short Break
+        </div>
+        <div
+          className={`long-break-tab tab${
+            mode === "longBreak" ? " selected" : ""
+          }`}
+          onClick={() => switchMode("longBreak")}
+        >
+          Long Break
+        </div>
       </div>
-      <div>
-        Short Break length : Minutes
-        <input
-          ref={shortBreakValue}
-          onBlur={(e) => handleOnFocusout(e, "shortBreak", shortBreakValue)}
-          type="number"
-          name="short-break-time"
-          min="1"
-          max="60"
-          defaultValue={obj.shortBreak.initialMin}
-        ></input>
+      {mode === "pomodoro" && <div className="mode">Pomodoro</div>}
+      {mode === "shortBreak" && <div className="mode">Short Break</div>}
+      {mode === "longBreak" && <div className="mode">Long Break</div>}
+      <div id="timer" ref={timerEl}></div>
+      <div id="timer-button-area">
+        <div id="timer-control">
+          {isRunning ? (
+            <div className="timer-button" onClick={stopTimer}>
+              Stop
+            </div>
+          ) : (
+            <div className="timer-button" onClick={startTimer}>
+              Start
+            </div>
+          )}
+          <div className="timer-button" onClick={resetTimer}>
+            Reset
+          </div>
+        </div>
+        <div
+          id="toggle-setting"
+          className="timer-button"
+          onClick={() => setIsOpenSetting(true)}
+        >
+          Setting
+        </div>
       </div>
-      <div>
-        Long Break length : Minutes
-        <input
-          ref={longBreakValue}
-          onBlur={(e) => handleOnFocusout(e, "longBreak", longBreakValue)}
-          type="number"
-          name="long-break-time"
-          min="1"
-          max="60"
-          defaultValue={obj.longBreak.initialMin}
-        ></input>
-      </div>
+      <div id="timer-message">{timerMessage}</div>
+      {isOpenSetting && (
+        <div id="setting">
+          <div id="unit">Min</div>
+          <div className="length">
+            Pomodoro length
+            <input
+              className="min-input"
+              ref={pomodoroValue}
+              onBlur={(e) => handleOnFocusout(e, "pomodoro", pomodoroValue)}
+              type="number"
+              name="pomodoro-time"
+              min="1"
+              max="60"
+              defaultValue={
+                obj.pomodoro.selectedTime / 60 || obj.pomodoro.initialMin
+              }
+            ></input>
+          </div>
+          <div className="length">
+            Short Break length
+            <input
+              className="min-input"
+              ref={shortBreakValue}
+              onBlur={(e) => handleOnFocusout(e, "shortBreak", shortBreakValue)}
+              type="number"
+              name="short-break-time"
+              min="1"
+              max="60"
+              defaultValue={
+                obj.shortBreak.selectedTime / 60 || obj.shortBreak.initialMin
+              }
+            ></input>
+          </div>
+          <div className="length">
+            Long Break length
+            <input
+              className="min-input"
+              ref={longBreakValue}
+              onBlur={(e) => handleOnFocusout(e, "longBreak", longBreakValue)}
+              type="number"
+              name="long-break-time"
+              min="1"
+              max="60"
+              defaultValue={
+                obj.longBreak.selectedTime / 60 || obj.longBreak.initialMin
+              }
+            ></input>
+          </div>
+          <div>
+            <div
+              className="setting-button ok-button"
+              onClick={() => setIsOpenSetting(false)}
+            >
+              OK
+            </div>
+            <div
+              className="setting-button setting-reset"
+              onClick={resetSelectedTime}
+            >
+              Reset All Settings
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
